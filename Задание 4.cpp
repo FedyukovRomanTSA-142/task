@@ -1,7 +1,8 @@
-﻿#include <iostream>
+clude <iostream>
 #include <cmath>
 #include <limits>
 using namespace std;
+
 /**
 *@brief Считывает значиния с клавиатуры с проверкой ввода
 *@return возвращает значение, если оно правильное , иначе завершает программу
@@ -20,7 +21,6 @@ double calculateFunction(double x);
 *@return step
 */
 double getPositiveStep();
-
 
 /**
 *@brief  точка хода в программу
@@ -42,19 +42,15 @@ int main()
         return 1;
     }
 
-    cout << "Введите шаг: ";
-    double step = getValue();
-    double getPositiveStep();
-
-
+    // Исправление: вызов функции и присвоение результата переменной step
+    double step = getPositiveStep();
 
     cout << "x | y" << endl;
     cout << "--------" << endl;
 
-
     for (double x = startX; x < endX + step; x += step)
     {
-        if (fabs(3 + sin(3.6 * x)) < -numeric_limits<double>::epsilon())
+        if (fabs(3 + sin(3.6 * x)) < numeric_limits<double>::epsilon())
         {
             cout << "Деление на ноль! Решение невозможно для x = " << x << endl;
         }
