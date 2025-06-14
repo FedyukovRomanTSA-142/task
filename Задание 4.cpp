@@ -1,30 +1,30 @@
-clude <iostream>
+#include <iostream>
 #include <cmath>
 #include <limits>
 using namespace std;
 
 /**
-*@brief Считывает значиния с клавиатуры с проверкой ввода
-*@return возвращает значение, если оно правильное , иначе завершает программу
+* @brief Считывает значения с клавиатуры с проверкой ввода
+* @return возвращает значение, если оно правильное, иначе завершает программу
 */
 double getValue();
 
 /**
-*@brief  Функция для вычисления значения функции y = x - (1 / (3 + sin(3.6 * x)))
-*@return x - (1 / (3 + sin(3.6 * x))
+* @brief Функция для вычисления значения функции y = x - (1 / (3 + sin(3.6 * x)))
+* @return x - (1 / (3 + sin(3.6 * x))
 */
 double calculateFunction(double x);
 
 /**
-*@brief  Функция для проверки, что шаг положительный
-*@param step шаг с которым идёт постороение графика
-*@return step
+* @brief Функция для проверки, что шаг положительный
+* @param step шаг с которым идёт построение графика
+* @return step
 */
 double getPositiveStep();
 
 /**
-*@brief  точка хода в программу
-*@return 0
+* @brief точка входа в программу
+* @return 0
 */
 int main()
 {
@@ -42,7 +42,7 @@ int main()
         return 1;
     }
 
-    // Исправление: вызов функции и присвоение результата переменной step
+    cout << "Введите шаг: ";
     double step = getPositiveStep();
 
     cout << "x | y" << endl;
@@ -66,7 +66,7 @@ int main()
 
 double getValue()
 {
-    double value;
+    double value = 0.0;
     cin >> value;
     if (cin.fail())
     {
@@ -83,14 +83,13 @@ double calculateFunction(double x)
 
 double getPositiveStep()
 {
-    double step;
-    do {
-        cout << "Введите шаг: ";
-        step = getValue();
-        if (step <= 0)
-        {
-            cout << "Ошибка. Шаг должен быть положительным. Повторите ввод." << endl;
-        }
-    } while (step <= 0);
+    double step = 0.0;
+    cout << "Введите шаг: ";
+    step = getValue();
+    if (step <= 0)
+    {
+        cout << "Ошибка. Шаг должен быть положительным." << endl;
+        abort();
+    }
     return step;
 }
