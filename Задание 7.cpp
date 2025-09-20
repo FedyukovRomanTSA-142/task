@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <cstdlib>
 #include <cmath>
 #include <ctime>
@@ -12,58 +12,58 @@ double getValue();
 
 /**
 *@brief Заполняет двумерный массив случайными значениями.
-* @param array Указатель на двумерный массив.
-* @param rows Количество строк в массиве.
-* @param cols Количество столбцов в массиве.
+* @param array Указатель на двумерный array.
+* @param rows Количество строк в array.
+* @param cols Количество столбцов в array.
 */
 void fillArrayRandomly(int** array, const int rows, const int cols);
 
 /**
-*@brief Заменяет нулевые элементы в столбцах двумерного массива на максимальные по модулю значения в этих столбцах.
-* @param  array Указатель на двумерный массив, в котором нужно заменить нулевые элементы.
-* @param rows Количество строк в массиве.
-* @param cols Количество столбцов в массиве
+*@brief Заменяет нулевые элементы в столбцах двумерного array на максимальные по модулю значения в этих столбцах.
+* @param  array Указатель на двумерный array, в котором нужно заменить нулевые элементы.
+* @param rows Количество строк в array.
+* @param cols Количество столбцов в array
 */
 void replaceZeroWithMaxAbsElement(int** array, const int rows, const int cols);
 
 /**
-@brief вставляет нули после элемента с максимальным по модулю значением в каждом столбце двумерного массива
-* @param  array Указатель на двумерный массив, в котором нужно заменить нулевые элементы.
-* @param arr3 Указатель на новый массив, в который будут вставлены нули.
-* @param rows Количество строк в массиве.
-* @param cols Количество столбцов в массиве
+@brief вставляет нули после элемента с максимальным по модулю значением в каждом столбце двумерного array
+* @param  array Указатель на двумерный array, в котором нужно заменить нулевые элементы.
+* @param arr3 Указатель на новый array, в который будут вставлены нули.
+* @param rows Количество строк в array.
+* @param cols Количество столбцов в array
 */
 void insertZerosAfterMaxAbsColumn(int** array, int** arr3, const int rows, const int cols);
 
 /**
-*brief Выводит двумерный массив на экран.
-* @param  array Указатель на двумерный массив, в котором нужно заменить нулевые элементы.
-* @param rows Количество строк в массиве.
-* @param cols Количество столбцов в массиве
+*brief Выводит двумерный array на экран.
+* @param  array Указатель на двумерный array, в котором нужно заменить нулевые элементы.
+* @param rows Количество строк в array.
+* @param cols Количество столбцов в array
 */
 void printArray(int** array, const int rows, const int cols);
 
 /**
-*@brief Создает новый двумерный массив с заданным количеством строк и столбцов.
-* @param rows Количество строк в новом массиве.
-* @param columns Количество столбцов в новом массиве.
-* @return Указатель на новый двумерный массив типа int.
+*@brief Создает новый двумерный array с заданным количеством строк и столбцов.
+* @param rows Количество строк в новом array.
+* @param columns Количество столбцов в новом array.
+* @return Указатель на новый двумерный array типа int.
 */
 int** getNewArray(const int rows, const int columns);
 
 /**
-*@brief Создает копию существующего двумерного массива с заданным количеством строк и столбцов.
-* @param arr Указатель на существующий двумерный массив типа int, который нужно скопировать.
-* @param rows Количество строк в существующем массиве.
-* @param columns Количество столбцов в существующем массиве.
-* @return Указатель на новую копию двумерного массива типа int.
+*@brief Создает копию существующего двумерного array с заданным количеством строк и столбцов.
+* @param arr Указатель на существующий двумерный array типа int, который нужно скопировать.
+* @param rows Количество строк в существующем array.
+* @param columns Количество столбцов в существующем array.
+* @return Указатель на новую копию двумерного array типа int.
 */
 int** copyArray(int** arr, const int rows, const int columns);
 
 /**
-*Освобождает память, выделенную под двумерный массив типа int.
-* @param arr Указатель на двумерный массив типа int, который нужно освободить.
-* @param rows Количество строк в двумерном массиве.
+*Освобождает память, выделенную под двумерный array типа int.
+* @param arr Указатель на двумерный array типа int, который нужно освободить.
+* @param rows Количество строк в двумерном array.
 */
 void deleteArray(int** arr, const int rows);
 
@@ -73,6 +73,15 @@ void deleteArray(int** arr, const int rows);
  * @return true, если значение положительное; false в противном случае
  */
 bool checkPositiveInput(const int value);
+
+/**
+* @brief Находит индекс максимального по модулю элемента в столбце
+* @param array Указатель на массив
+* @param rows Количество строк
+* @param column Номер столбца
+* @return Индекс максимального по модулю элемента
+*/
+int findMaxAbsIndex(int** array, int rows, int column);
 
 /**
 *brief Точка входа в программу
@@ -123,70 +132,74 @@ int main()
 
 bool checkPositiveInput(const int value)
 {
-    if (value > 0)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return value > 0;
 }
 
 void fillArrayRandomly(int** array, int rows, int cols) {
-    for (size_t i = 0; i < rows; ++i) {
-        for (size_t j = 0; j < cols; ++j) {
-            array[i][j] = rand() - RAND_MAX / 2;
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            array[i][j] = rand() % 100 - 50; // Более читаемый диапазон значений
         }
     }
 }
 
-int findMaxAbsIndex(int** array, int rows, int cols, int column) {
-    int maxAbsValue = 0;
-    for (size_t i = 0; i < rows; ++i) {
-        if (abs(array[i][column]) > abs(array[maxAbsValue][column])) {
-            maxAbsValue = i;
+int findMaxAbsIndex(int** array, int rows, int column) {
+    int maxAbsIndex = 0;
+    for (int i = 1; i < rows; ++i) {
+        if (abs(array[i][column]) > abs(array[maxAbsIndex][column])) {
+            maxAbsIndex = i;
         }
     }
-    return maxAbsValue;
+    return maxAbsIndex;
 }
-
 
 void replaceZeroWithMaxAbsElement(int** array, const int rows, const int cols) {
-    for (size_t j = 0; j < cols; ++j) {
-        int maxAbsIndex = findMaxAbsIndex(array, rows, cols, j);
-        if (array[maxAbsIndex][j] == 0) {
-            array[maxAbsIndex][j] = abs(array[maxAbsIndex][j]);
+    for (int j = 0; j < cols; ++j) {
+        int maxAbsIndex = findMaxAbsIndex(array, rows, j);
+        for (int i = 0; i < rows; ++i) {
+            if (array[i][j] == 0) {
+                array[i][j] = array[maxAbsIndex][j];
+            }
         }
     }
 }
 
 void insertZerosAfterMaxAbsColumn(int** array, int** arr3, const int rows, const int cols) {
-    for (size_t j = 0; j < cols; ++j) {
-        int maxAbsIndex = findMaxAbsIndex(array, rows, cols, j);
-        for (size_t i = 0; i < rows; ++i) {
+    // Инициализируем новый массив нулями
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols + rows; ++j) {
+            arr3[i][j] = 0;
+        }
+    }
+    
+    // Копируем элементы из исходного массива
+    for (int j = 0; j < cols; ++j) {
+        int maxAbsIndex = findMaxAbsIndex(array, rows, j);
+        for (int i = 0; i < rows; ++i) {
             arr3[i][j] = array[i][j];
         }
-        if (maxAbsIndex != rows - 1) {
-            for (size_t k = maxAbsIndex + 1; k < rows; ++k) {
-                arr3[k][j + k - maxAbsIndex] = 0;
+        
+        // Вставляем нули после максимального элемента в столбце
+        if (maxAbsIndex < rows - 1) {
+            for (int i = maxAbsIndex + 1; i < rows; ++i) {
+                arr3[i][j] = 0;
             }
         }
     }
 }
 
 void printArray(int** array, const int rows, const int cols) {
-    for (size_t i = 0; i < rows; ++i)
+    for (int i = 0; i < rows; ++i)
     {
-        for (size_t j = 0; j < cols; ++j) {
-            cout << array[i][j] << " ";
+        for (int j = 0; j < cols; ++j) {
+            cout << array[i][j] << "\t";
         }
         cout << endl;
     }
 }
 
 double getValue() {
-    double value;
+    double value = 0.0;
     cin >> value;
     if (cin.fail()) {
         cout << "Некорректное значение" << endl;
@@ -198,7 +211,7 @@ double getValue() {
 int** getNewArray(const int max_rows, const int max_cols)
 {
     int** array = new int* [max_rows];
-    for (size_t i = 0; i < max_rows; ++i)
+    for (int i = 0; i < max_rows; ++i)
     {
         array[i] = new int[max_cols];
     }
@@ -207,9 +220,9 @@ int** getNewArray(const int max_rows, const int max_cols)
 
 int** copyArray(int** arr, const int rows, const int columns) {
     int** resultArray = getNewArray(rows, columns);
-    for (size_t i = 0; i < rows; i++)
+    for (int i = 0; i < rows; i++)
     {
-        for (size_t j = 0; j < columns; j++)
+        for (int j = 0; j < columns; j++)
         {
             resultArray[i][j] = arr[i][j];
         }
@@ -217,9 +230,8 @@ int** copyArray(int** arr, const int rows, const int columns) {
     return resultArray;
 }
 
-
 void deleteArray(int** arr, const int rows) {
-    for (size_t i = 0; i < rows; ++i) {
+    for (int i = 0; i < rows; ++i) {
         delete[] arr[i];
     }
     delete[] arr;
