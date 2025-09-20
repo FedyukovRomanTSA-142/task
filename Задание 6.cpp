@@ -1,7 +1,6 @@
-﻿#include <iostream>
+#include <iostream>
 #include <ctime>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
 
 using namespace std;
 
@@ -108,7 +107,7 @@ int main()
 
     cout << "Введите выбор для заполнения массива: " << endl
         << RANDOM << " Для случайного заполнения" << endl
-        << MANUALLY << "Для ручного заполнения" << endl;
+        << MANUALLY << " Для ручного заполнения" << endl;
 
     int choice = getNumber();
 
@@ -122,20 +121,19 @@ int main()
         break;
     default:
         cout << "Ваш выбор неверен" << endl;
+        delete[] arr;
         return -1;
-        break;
     }
 
     cout << "Элементы массива:" << endl;
     printArray(arr, n);
 
     // Вызов функций
-    cout << "Сумма отрицательных элементов  " << sumNegativeElements(arr, n) << endl;
+    cout << "Сумма отрицательных элементов: " << sumNegativeElements(arr, n) << endl;
 
-    int a;
-    cout << "Введите значение  a: ";
-    a = getNumber();
-    cout << "Количество положительных элементов до  " << a << ": " << countPositiveElementsUpToA(arr, n, a) << endl;
+    cout << "Введите значение a: ";
+    int a = getNumber();
+    cout << "Количество положительных элементов до " << a << ": " << countPositiveElementsUpToA(arr, n, a) << endl;
 
     int lastPairIndex = findLastPairWithDifferentSigns(arr, n);
     if (lastPairIndex != -1)
@@ -148,7 +146,6 @@ int main()
     }
 
     delete[] arr;
-
     return 0;
 }
 
@@ -164,7 +161,7 @@ void checkN(const int n)
 size_t getSize()
 {
     cout << "Введите размер массива: ";
-    int n;
+    int n = 0;
     cin >> n;
     checkN(n);
     return (size_t)n;
@@ -172,7 +169,7 @@ size_t getSize()
 
 int getNumber()
 {
-    int number;
+    int number = 0;
     cin >> number;
     if (cin.fail())
     {
@@ -195,7 +192,7 @@ void fillArrayRandom(int* arr, const int n, const int min, const int max)
     srand(time(0));
     for (size_t i = 0; i < n; i++)
     {
-        arr[i] = rand() % (max - min) + min;
+        arr[i] = rand() % (max - min + 1) + min;
     }
 }
 
@@ -233,9 +230,10 @@ int countPositiveElementsUpToA(const int* arr, const int n, const int A)
     }
     return count;
 }
+
 int findLastPairWithDifferentSigns(const int* arr, const int n)
 {
-    for (size_t i = n - 1; i > 0; i++)
+    for (int i = n - 1; i > 0; i--) // Исправлено: i++ на i-- и тип на int
     {
         if (arr[i] * arr[i - 1] < 0)
         {
