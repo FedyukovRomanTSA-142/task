@@ -4,27 +4,27 @@
 using namespace std;
 
 /**
-* @brief Считывает значения с клавиатуры с проверкой ввода
-* @return возвращает значение, если оно правильное, иначе завершает программу
+*@brief Считывает значиния с клавиатуры с проверкой ввода
+*@return возвращает значение, если оно правильное , иначе завершает программу
 */
 double getValue();
 
 /**
-* @brief Функция для вычисления значения функции y = x - (1 / (3 + sin(3.6 * x)))
-* @return x - (1 / (3 + sin(3.6 * x))
+*@brief  Функция для вычисления значения функции y = x - (1 / (3 + sin(3.6 * x)))
+*@return x - (1 / (3 + sin(3.6 * x))
 */
 double calculateFunction(double x);
 
 /**
-* @brief Функция для проверки, что шаг положительный
-* @param step шаг с которым идёт построение графика
-* @return step
+*@brief  Функция для проверки, что шаг положительный
+*@param step шаг с которым идёт постороение графика
+*@return step
 */
 double getPositiveStep();
 
 /**
-* @brief точка входа в программу
-* @return 0
+*@brief  точка хода в программу
+*@return 0
 */
 int main()
 {
@@ -66,7 +66,7 @@ int main()
 
 double getValue()
 {
-    double value = 0.0;
+    double value;
     cin >> value;
     if (cin.fail())
     {
@@ -83,7 +83,7 @@ double calculateFunction(double x)
 
 double getPositiveStep()
 {
-    double step = 0.0;
+    double step;
     cout << "Введите шаг: ";
     step = getValue();
     if (step <= 0)
