@@ -59,6 +59,13 @@ int countPositiveLessThanA(int arr[], int n, int A)
 int lastDifferentSignsPair(int arr[], int n) 
 
 
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
+
+
 int main() {
     setlocale(LC_ALL, "Russian"); // Для поддержки русского языка
     
@@ -125,6 +132,48 @@ int main() {
     
     return 0;
 }
+
+/**
+ * @brief Заполняет массив случайными числами в диапазоне [-100; 200]
+ * 
+ * @param arr Указатель на массив для заполнения
+ * @param n Размер массива
+ */
+void fillRandom(int arr[], int n) {
+    srand(time(0)); // Инициализация генератора случайных чисел
+    for (int i = 0; i < n; i++) {
+        arr[i] = rand() % 301 - 100; // Диапазон [-100; 200]
+    }
+    cout << "Массив заполнен случайными числами." << endl;
+}
+
+/**
+ * @brief Заполняет массив числами, введенными с клавиатуры
+ * 
+ * @param arr Указатель на массив для заполнения
+ * @param n Размер массива
+ */
+void fillKeyboard(int arr[], int n) {
+    cout << "Введите " << n << " целых чисел в диапазоне [-100; 200]:" << endl;
+    for (int i = 0; i < n; i++) {
+        cout << "Элемент " << i + 1 << ": ";
+        cin >> arr[i];
+        // Проверка на соответствие диапазону
+        while (arr[i] < -100 || arr[i] > 200) {
+            cout << "Число должно быть в диапазоне [-100; 200]. Повторите ввод: ";
+            cin >> arr[i];
+        }
+    }
+    cout << "Массив заполнен числами с клавиатуры." << endl;
+}
+
+/**
+ * @brief Выводит элементы массива на экран
+ * 
+ * @param arr Указатель на массив для вывода
+ * @param n Размер массива
+ */
+void printArray(int arr[], int n)
 // Функция для заполнения массива случайными числами
 void fillRandom(int arr[], int n) {
     srand(time(0)); // Инициализация генератора случайных чисел
