@@ -1,0 +1,139 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
+
+// Функция для заполнения массива случайными числами
+void fillRandom(int arr[], int n) {
+    srand(time(0)); // Инициализация генератора случайных чисел
+    for (int i = 0; i < n; i++) {
+        arr[i] = rand() % 301 - 100; // Диапазон [-100; 200]
+    }
+}
+
+// Функция для заполнения массива с клавиатуры
+void fillKeyboard(int arr[], int n) {
+    cout << "Введите " << n << " целых чисел в диапазоне [-100; 200]:" << endl;
+    for (int i = 0; i < n; i++) {
+        cout << "Элемент " << i + 1 << ": ";
+        cin >> arr[i];
+        // Проверка на соответствие диапазону
+        while (arr[i] < -100 || arr[i] > 200) {
+            cout << "Число должно быть в диапазоне [-100; 200]. Повторите ввод: ";
+            cin >> arr[i];
+        }
+    }
+}
+
+// Функция для вывода массива
+void printArray(int arr[], int n) {
+    cout << "Массив: ";
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+// 1. Найти сумму отрицательных элементов
+int sumNegative(int arr[], int n) {
+    int sum = 0;
+    for (int i = 0; i < n; i++) {
+        if (arr[i] < 0) {
+            sum += arr[i];
+        }
+    }
+    return sum;
+}
+
+// 2. Найти количество элементов, значения которых положительны и не превосходят заданного числа А
+int countPositiveLessThanA(int arr[], int n, int A) {
+    int count = 0;
+    for (int i = 0; i < n; i++) {
+        if (arr[i] > 0 && arr[i] <= A) {
+            count++;
+        }
+    }
+    return count;
+}
+
+// 3. Найти номер последней пары соседних элементов с разными знаками
+int lastDifferentSignsPair(int arr[], int n) {
+    int lastIndex = -1; // -1 означает, что пара не найдена
+    
+    for (int i = 0; i < n - 1; i++) {
+        // Проверяем, имеют ли соседние элементы разные знаки
+        if ((arr[i] < 0 && arr[i + 1] >= 0) || (arr[i] >= 0 && arr[i + 1] < 0)) {
+            lastIndex = i; // Запоминаем индекс первого элемента пары
+        }
+    }
+    
+    return lastIndex;
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian"); // Для поддержки русского языка
+    
+    int n;
+    cout << "Введите размер массива: ";
+    cin >> n;
+    
+    if (n <= 0) {
+        cout << "Размер массива должен быть положительным числом!" << endl;
+        return 1;
+    }
+    
+    int* arr = new int[n]; // Динамическое выделение памяти
+    
+    // Выбор способа заполнения массива
+    int choice;
+    cout << "\nВыберите способ заполнения массива:" << endl;
+    cout << "1 - Заполнить случайными числами" << endl;
+    cout << "2 - Ввести с клавиатуры" << endl;
+    cout << "Ваш выбор: ";
+    cin >> choice;
+    
+    switch (choice) {
+        case 1:
+            fillRandom(arr, n);
+            break;
+        case 2:
+            fillKeyboard(arr, n);
+            break;
+        default:
+            cout << "Неверный выбор! Массив будет заполнен случайными числами." << endl;
+            fillRandom(arr, n);
+            break;
+    }
+    
+    // Вывод массива
+    cout << "\n";
+    printArray(arr, n);
+    
+    // Выполнение заданий
+    cout << "\n--- РЕЗУЛЬТАТЫ ---" << endl;
+    
+    // 1. Сумма отрицательных элементов
+    int negativeSum = sumNegative(arr, n);
+    cout << "1. Сумма отрицательных элементов: " << negativeSum << endl;
+    
+    // 2. Количество положительных элементов, не превосходящих A
+    int A;
+    cout << "\nВведите число A для второго задания: ";
+    cin >> A;
+    int count = countPositiveLessThanA(arr, n, A);
+    cout << "2. Количество положительных элементов, не превосходящих " << A << ": " << count << endl;
+    
+    // 3. Номер последней пары соседних элементов с разными знаками
+    int lastPairIndex = lastDifferentSignsPair(arr, n);
+    if (lastPairIndex != -1) {
+        cout << "3. Номер последней пары соседних элементов с разными знаками: " << lastPairIndex << endl;
+        cout << "   (элементы " << arr[lastPairIndex] << " и " << arr[lastPairIndex + 1] << ")" << endl;
+    } else {
+        cout << "3. Пар соседних элементов с разными знаками не найдено" << endl;
+    }
+    
+    delete[] arr; // Освобождение памяти
+    
+    return 0;
+}
