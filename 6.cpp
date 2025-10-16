@@ -1,242 +1,166 @@
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
+import asyncio
+import logging
+from datetime import datetime, timedelta
 
-using namespace std;
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-/**
- * Заполняет массив случайными числами в диапазоне [-100; 200]
- * @param arr[] - целочисленный массив для заполнения
- * @param n - размер массива
- * @note Использует текущее время для инициализации генератора случайных чисел
- */
-void fillRandom(int arr[], int n) 
+class DataProcessor:
+    def __init__(self):
+        self._is_running = False
+        self._current_task = None
+        self._data_cache = {}
+        self._cache_ttl = timedelta(minutes=10)
 
-/**
- * Заполняет массив числами, введенными пользователем с клавиатуры
- * @param arr[] - целочисленный массив для заполнения
- * @param n - размер массива
- * @note Запрашивает ввод каждого элемента с проверкой диапазона [-100; 200]
- * @warning При вводе недопустимого значения запрашивает повторный ввод
- */
-void fillKeyboard(int arr[], int n) 
+    async def start_processing(self):
+        """Запуск обработки данных"""
+        if self._is_running:
+            logger.warning("Обработка уже запущена")
+            return
+        
+        self._is_running = True
+        try:
+            self._current_task = asyncio.create_task(self._process_loop())
+            logger.info("Обработка данных запущена")
+        except Exception as e:
+            logger.error(f"Ошибка при запуске: {e}")
+            self._is_running = False
 
-/**
- * Выводит элементы массива в консоль
- * @param arr[] - целочисленный массив для вывода
- * @param n - размер массива
- * @format Вывод: "Массив: элемент1 элемент2 ... элементN"
- */
-void printArray(int arr[], int n) 
+    async def stop_processing(self):
+        """Остановка обработки данных"""
+        if not self._is_running or not self._current_task:
+            logger.warning("Обработка не запущена")
+            return
+        
+        self._is_running = False
+        try:
+            await asyncio.wait_for(self._current_task, timeout=5.0)
+            logger.info("Обработка данных остановлена")
+        except asyncio.TimeoutError:
+            logger.warning("Таймаут при остановке обработки")
+        except Exception as e:
+            logger.error(f"Ошибка при остановке: {e}")
+        finally:
+            self._current_task = None
 
-/**
- * Вычисляет сумму всех отрицательных элементов массива
- * @param arr[] - целочисленный массив для обработки
- * @param n - размер массива
- * @return Сумма всех отрицательных элементов массива
- * @retval 0 если отрицательных элементов нет
- */
-int sumNegative(int arr[], int n) 
+    async def _process_loop(self):
+        """Основной цикл обработки"""
+        while self._is_running:
+            try:
+                await self._fetch_data()
+                await self._cleanup_cache()
+                await asyncio.sleep(1)
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Ошибка в цикле обработки: {e}")
+                await asyncio.sleep(5)
 
-/**
- * Подсчитывает количество положительных элементов, не превосходящих заданное число
- * @param arr[] - целочисленный массив для обработки
- * @param n - размер массива
- * @param A - верхняя граница значения (включительно)
- * @return Количество элементов, удовлетворяющих условиям: > 0 и <= A
- */
-int countPositiveLessThanA(int arr[], int n, int A) 
+    async def _fetch_data(self):
+        """Получение и обработка данных"""
+        try:
+            # Имитация получения данных
+            data = await self._get_external_data()
+            
+            if not data:
+                logger.debug("Данные не получены")
+                return
+            
+            processed_data = await self._transform_data(data)
+            await self._store_data(processed_data)
+            
+        except ValueError as e:
+            logger.warning(f"Некорректные данные: {e}")
+        except ConnectionError as e:
+            logger.error(f"Ошибка соединения: {e}")
+            await asyncio.sleep(2)
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка при получении данных: {e}")
 
-/**
- * Находит индекс последней пары соседних элементов с разными знаками
- * @param arr[] - целочисленный массив для обработки
- * @param n - размер массива
- * @return Индекс первого элемента последней найденной пары
- * @retval -1 если таких пар не найдено
- * @note Считает 0 положительным числом (неотрицательным)
- * @note Разные знаки: (отрицательный + неотрицательный) или (неотрицательный + отрицательный)
- */
-int lastDifferentSignsPair(int arr[], int n) 
+    async def _get_external_data(self):
+        """Имитация получения внешних данных"""
+        await asyncio.sleep(0.1)
+        return {"timestamp": datetime.now(), "value": 42}
 
-
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-
-using namespace std;
-
-
-int main() {
-    setlocale(LC_ALL, "Russian"); // Для поддержки русского языка
-    
-    int n;
-    cout << "Введите размер массива: ";
-    cin >> n;
-    
-    if (n <= 0) {
-        cout << "Размер массива должен быть положительным числом!" << endl;
-        return 1;
-    }
-    
-    int* arr = new int[n]; // Динамическое выделение памяти
-    
-    // Выбор способа заполнения массива
-    int choice;
-    cout << "\nВыберите способ заполнения массива:" << endl;
-    cout << "1 - Заполнить случайными числами" << endl;
-    cout << "2 - Ввести с клавиатуры" << endl;
-    cout << "Ваш выбор: ";
-    cin >> choice;
-    
-    switch (choice) {
-        case 1:
-            fillRandom(arr, n);
-            break;
-        case 2:
-            fillKeyboard(arr, n);
-            break;
-        default:
-            cout << "Неверный выбор! Массив будет заполнен случайными числами." << endl;
-            fillRandom(arr, n);
-            break;
-    }
-    
-    // Вывод массива
-    cout << "\n";
-    printArray(arr, n);
-    
-    // Выполнение заданий
-    cout << "\n--- РЕЗУЛЬТАТЫ ---" << endl;
-    
-    // 1. Сумма отрицательных элементов
-    int negativeSum = sumNegative(arr, n);
-    cout << "1. Сумма отрицательных элементов: " << negativeSum << endl;
-    
-    // 2. Количество положительных элементов, не превосходящих A
-    int A;
-    cout << "\nВведите число A для второго задания: ";
-    cin >> A;
-    int count = countPositiveLessThanA(arr, n, A);
-    cout << "2. Количество положительных элементов, не превосходящих " << A << ": " << count << endl;
-    
-    // 3. Номер последней пары соседних элементов с разными знаками
-    int lastPairIndex = lastDifferentSignsPair(arr, n);
-    if (lastPairIndex != -1) {
-        cout << "3. Номер последней пары соседних элементов с разными знаками: " << lastPairIndex << endl;
-        cout << "   (элементы " << arr[lastPairIndex] << " и " << arr[lastPairIndex + 1] << ")" << endl;
-    } else {
-        cout << "3. Пар соседних элементов с разными знаками не найдено" << endl;
-    }
-    
-    delete[] arr; // Освобождение памяти
-    
-    return 0;
-}
-
-/**
- * @brief Заполняет массив случайными числами в диапазоне [-100; 200]
- * 
- * @param arr Указатель на массив для заполнения
- * @param n Размер массива
- */
-void fillRandom(int arr[], int n) {
-    srand(time(0)); // Инициализация генератора случайных чисел
-    for (int i = 0; i < n; i++) {
-        arr[i] = rand() % 301 - 100; // Диапазон [-100; 200]
-    }
-    cout << "Массив заполнен случайными числами." << endl;
-}
-
-/**
- * @brief Заполняет массив числами, введенными с клавиатуры
- * 
- * @param arr Указатель на массив для заполнения
- * @param n Размер массива
- */
-void fillKeyboard(int arr[], int n) {
-    cout << "Введите " << n << " целых чисел в диапазоне [-100; 200]:" << endl;
-    for (int i = 0; i < n; i++) {
-        cout << "Элемент " << i + 1 << ": ";
-        cin >> arr[i];
-        // Проверка на соответствие диапазону
-        while (arr[i] < -100 || arr[i] > 200) {
-            cout << "Число должно быть в диапазоне [-100; 200]. Повторите ввод: ";
-            cin >> arr[i];
+    async def _transform_data(self, data):
+        """Преобразование данных"""
+        if not isinstance(data, dict):
+            raise ValueError("Данные должны быть словарем")
+        
+        if "value" not in data:
+            raise ValueError("Отсутствует обязательное поле 'value'")
+        
+        transformed = {
+            "processed_value": data["value"] * 2,
+            "processed_at": datetime.now(),
+            "source_timestamp": data.get("timestamp")
         }
-    }
-    cout << "Массив заполнен числами с клавиатуры." << endl;
-}
+        
+        return transformed
 
-/**
- * @brief Выводит элементы массива на экран
- * 
- * @param arr Указатель на массив для вывода
- * @param n Размер массива
- */
-void printArray(int arr[], int n)
-// Функция для заполнения массива случайными числами
-void fillRandom(int arr[], int n) {
-    srand(time(0)); // Инициализация генератора случайных чисел
-    for (int i = 0; i < n; i++) {
-        arr[i] = rand() % 301 - 100; // Диапазон [-100; 200]
-    }
-}
+    async def _store_data(self, data):
+        """Сохранение данных в кэш"""
+        try:
+            if not data:
+                return
+            
+            key = str(data["processed_at"].timestamp())
+            self._data_cache[key] = {
+                "data": data,
+                "created_at": datetime.now()
+            }
+            
+        except KeyError as e:
+            logger.error(f"Отсутствует ключ в данных: {e}")
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении данных: {e}")
 
-// Функция для заполнения массива с клавиатуры
-void fillKeyboard(int arr[], int n) {
-    cout << "Введите " << n << " целых чисел в диапазоне [-100; 200]:" << endl;
-    for (int i = 0; i < n; i++) {
-        cout << "Элемент " << i + 1 << ": ";
-        cin >> arr[i];
-        // Проверка на соответствие диапазону
-        while (arr[i] < -100 || arr[i] > 200) {
-            cout << "Число должно быть в диапазоне [-100; 200]. Повторите ввод: ";
-            cin >> arr[i];
+    async def _cleanup_cache(self):
+        """Очистка устаревших данных из кэша"""
+        try:
+            current_time = datetime.now()
+            expired_keys = [
+                key for key, value in self._data_cache.items()
+                if current_time - value["created_at"] > self._cache_ttl
+            ]
+            
+            for key in expired_keys:
+                del self._data_cache[key]
+                
+            if expired_keys:
+                logger.debug(f"Удалено устаревших записей: {len(expired_keys)}")
+                
+        except RuntimeError as e:
+            logger.error(f"Ошибка при изменении кэша: {e}")
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка при очистке кэша: {e}")
+
+    def get_processing_stats(self):
+        """Получение статистики обработки"""
+        return {
+            "is_running": self._is_running,
+            "cache_size": len(self._data_cache),
+            "cache_ttl_minutes": self._cache_ttl.total_seconds() / 60
         }
-    }
-}
 
-// Функция для вывода массива
-void printArray(int arr[], int n) {
-    cout << "Массив: ";
-    for (int i = 0; i < n; i++) {
-        cout << arr[i] << " ";
-    }
-    cout << endl;
-}
-
-// 1. Найти сумму отрицательных элементов
-int sumNegative(int arr[], int n) {
-    int sum = 0;
-    for (int i = 0; i < n; i++) {
-        if (arr[i] < 0) {
-            sum += arr[i];
-        }
-    }
-    return sum;
-}
-
-// 2. Найти количество элементов, значения которых положительны и не превосходят заданного числа А
-int countPositiveLessThanA(int arr[], int n, int A) {
-    int count = 0;
-    for (int i = 0; i < n; i++) {
-        if (arr[i] > 0 && arr[i] <= A) {
-            count++;
-        }
-    }
-    return count;
-}
-
-// 3. Найти номер последней пары соседних элементов с разными знаками
-int lastDifferentSignsPair(int arr[], int n) {
-    int lastIndex = -1; // -1 означает, что пара не найдена
+async def main():
+    """Основная функция"""
+    processor = DataProcessor()
     
-    for (int i = 0; i < n - 1; i++) {
-        // Проверяем, имеют ли соседние элементы разные знаки
-        if ((arr[i] < 0 && arr[i + 1] >= 0) || (arr[i] >= 0 && arr[i + 1] < 0)) {
-            lastIndex = i; // Запоминаем индекс первого элемента пары
-        }
-    }
-    
-    return lastIndex;
-}
+    try:
+        await processor.start_processing()
+        await asyncio.sleep(5)
+        
+        stats = processor.get_processing_stats()
+        logger.info(f"Статистика: {stats}")
+        
+        await asyncio.sleep(2)
+        
+    except KeyboardInterrupt:
+        logger.info("Получен сигнал прерывания")
+    finally:
+        await processor.stop_processing()
+
+if __name__ == "__main__":
+    asyncio.run(main())
