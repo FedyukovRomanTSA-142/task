@@ -1,166 +1,123 @@
-import asyncio
-import logging
-from datetime import datetime, timedelta
+#include <iostream>
+#include <memory>
+#include <thread>
+#include <chrono>
+#include <atomic>
+#include <mutex>
+#include <unordered_map>
+#include <string>
+#include <exception>
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+class DataProcessor {
+private:
+    std::atomic<bool> _is_running;
+    std::thread _processing_thread;
+    std::unordered_map<std::string, std::pair<std::chrono::system_clock::time_point, int>> _data_cache;
+    std::mutex _cache_mutex;
+    std::chrono::minutes _cache_ttl;
 
-class DataProcessor:
-    def __init__(self):
-        self._is_running = False
-        self._current_task = None
-        self._data_cache = {}
-        self._cache_ttl = timedelta(minutes=10)
-
-    async def start_processing(self):
-        """Запуск обработки данных"""
-        if self._is_running:
-            logger.warning("Обработка уже запущена")
-            return
-        
-        self._is_running = True
-        try:
-            self._current_task = asyncio.create_task(self._process_loop())
-            logger.info("Обработка данных запущена")
-        except Exception as e:
-            logger.error(f"Ошибка при запуске: {e}")
-            self._is_running = False
-
-    async def stop_processing(self):
-        """Остановка обработки данных"""
-        if not self._is_running or not self._current_task:
-            logger.warning("Обработка не запущена")
-            return
-        
-        self._is_running = False
-        try:
-            await asyncio.wait_for(self._current_task, timeout=5.0)
-            logger.info("Обработка данных остановлена")
-        except asyncio.TimeoutError:
-            logger.warning("Таймаут при остановке обработки")
-        except Exception as e:
-            logger.error(f"Ошибка при остановке: {e}")
-        finally:
-            self._current_task = None
-
-    async def _process_loop(self):
-        """Основной цикл обработки"""
-        while self._is_running:
-            try:
-                await self._fetch_data()
-                await self._cleanup_cache()
-                await asyncio.sleep(1)
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                logger.error(f"Ошибка в цикле обработки: {e}")
-                await asyncio.sleep(5)
-
-    async def _fetch_data(self):
-        """Получение и обработка данных"""
-        try:
-            # Имитация получения данных
-            data = await self._get_external_data()
-            
-            if not data:
-                logger.debug("Данные не получены")
-                return
-            
-            processed_data = await self._transform_data(data)
-            await self._store_data(processed_data)
-            
-        except ValueError as e:
-            logger.warning(f"Некорректные данные: {e}")
-        except ConnectionError as e:
-            logger.error(f"Ошибка соединения: {e}")
-            await asyncio.sleep(2)
-        except Exception as e:
-            logger.error(f"Неожиданная ошибка при получении данных: {e}")
-
-    async def _get_external_data(self):
-        """Имитация получения внешних данных"""
-        await asyncio.sleep(0.1)
-        return {"timestamp": datetime.now(), "value": 42}
-
-    async def _transform_data(self, data):
-        """Преобразование данных"""
-        if not isinstance(data, dict):
-            raise ValueError("Данные должны быть словарем")
-        
-        if "value" not in data:
-            raise ValueError("Отсутствует обязательное поле 'value'")
-        
-        transformed = {
-            "processed_value": data["value"] * 2,
-            "processed_at": datetime.now(),
-            "source_timestamp": data.get("timestamp")
+    void processing_loop() {
+        while (_is_running.load()) {
+            try {
+                fetch_data();
+                cleanup_cache();
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            } catch (const std::exception& e) {
+                std::cerr << "Error in processing loop: " << e.what() << std::endl;
+                std::this_thread::sleep_for(std::chrono::seconds(5));
+            }
         }
-        
-        return transformed
+    }
 
-    async def _store_data(self, data):
-        """Сохранение данных в кэш"""
-        try:
-            if not data:
-                return
+    void fetch_data() {
+        try {
+            auto data = get_external_data();
             
-            key = str(data["processed_at"].timestamp())
-            self._data_cache[key] = {
-                "data": data,
-                "created_at": datetime.now()
+            if (data.empty()) {
+                std::cout << "No data received" << std::endl;
+                return;
             }
             
-        except KeyError as e:
-            logger.error(f"Отсутствует ключ в данных: {e}")
-        except Exception as e:
-            logger.error(f"Ошибка при сохранении данных: {e}")
-
-    async def _cleanup_cache(self):
-        """Очистка устаревших данных из кэша"""
-        try:
-            current_time = datetime.now()
-            expired_keys = [
-                key for key, value in self._data_cache.items()
-                if current_time - value["created_at"] > self._cache_ttl
-            ]
+            auto processed_data = transform_data(data);
+            store_data(processed_data);
             
-            for key in expired_keys:
-                del self._data_cache[key]
-                
-            if expired_keys:
-                logger.debug(f"Удалено устаревших записей: {len(expired_keys)}")
-                
-        except RuntimeError as e:
-            logger.error(f"Ошибка при изменении кэша: {e}")
-        except Exception as e:
-            logger.error(f"Неожиданная ошибка при очистке кэша: {e}")
-
-    def get_processing_stats(self):
-        """Получение статистики обработки"""
-        return {
-            "is_running": self._is_running,
-            "cache_size": len(self._data_cache),
-            "cache_ttl_minutes": self._cache_ttl.total_seconds() / 60
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Invalid data: " << e.what() << std::endl;
+        } catch (const std::runtime_error& e) {
+            std::cerr << "Connection error: " << e.what() << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+        } catch (const std::exception& e) {
+            std::cerr << "Unexpected error in data fetching: " << e.what() << std::endl;
         }
+    }
 
-async def main():
-    """Основная функция"""
-    processor = DataProcessor()
-    
-    try:
-        await processor.start_processing()
-        await asyncio.sleep(5)
-        
-        stats = processor.get_processing_stats()
-        logger.info(f"Статистика: {stats}")
-        
-        await asyncio.sleep(2)
-        
-    except KeyboardInterrupt:
-        logger.info("Получен сигнал прерывания")
-    finally:
-        await processor.stop_processing()
+    int get_external_data() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        return 42;
+    }
 
-if __name__ == "__main__":
-    asyncio.run(main())
+    int transform_data(int data) {
+        if (data < 0) {
+            throw std::invalid_argument("Data cannot be negative");
+        }
+        return data * 2;
+    }
+
+    void store_data(int processed_data) {
+        try {
+            std::lock_guard<std::mutex> lock(_cache_mutex);
+            auto now = std::chrono::system_clock::now();
+            auto key = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+                now.time_since_epoch()).count());
+            
+            _data_cache[key] = std::make_pair(now, processed_data);
+            
+        } catch (const std::exception& e) {
+            std::cerr << "Error storing data: " << e.what() << std::endl;
+        }
+    }
+
+    void cleanup_cache() {
+        try {
+            std::lock_guard<std::mutex> lock(_cache_mutex);
+            auto now = std::chrono::system_clock::now();
+            
+            auto it = _data_cache.begin();
+            while (it != _data_cache.end()) {
+                if (now - it->second.first > _cache_ttl) {
+                    it = _data_cache.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            
+        } catch (const std::exception& e) {
+            std::cerr << "Error cleaning cache: " << e.what() << std::endl;
+        }
+    }
+
+public:
+    DataProcessor() : _is_running(false), _cache_ttl(std::chrono::minutes(10)) {}
+
+    ~DataProcessor() {
+        stop_processing();
+    }
+
+    void start_processing() {
+        if (_is_running.exchange(true)) {
+            std::cout << "Processing already running" << std::endl;
+            return;
+        }
+        
+        try {
+            _processing_thread = std::thread(&DataProcessor::processing_loop, this);
+            std::cout << "Data processing started" << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Error starting processing: " << e.what() << std::endl;
+            _is_running = false;
+        }
+    }
+
+    void stop_processing() {
+        if (!_is_running.exchange(false)) {
+            std::cout
