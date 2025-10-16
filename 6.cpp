@@ -1,123 +1,160 @@
 #include <iostream>
-#include <memory>
-#include <thread>
-#include <chrono>
-#include <atomic>
-#include <mutex>
-#include <unordered_map>
-#include <string>
-#include <exception>
+#include <cstdlib>
+#include <ctime>
 
-class DataProcessor {
-private:
-    std::atomic<bool> _is_running;
-    std::thread _processing_thread;
-    std::unordered_map<std::string, std::pair<std::chrono::system_clock::time_point, int>> _data_cache;
-    std::mutex _cache_mutex;
-    std::chrono::minutes _cache_ttl;
+using namespace std;
 
-    void processing_loop() {
-        while (_is_running.load()) {
-            try {
-                fetch_data();
-                cleanup_cache();
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-            } catch (const std::exception& e) {
-                std::cerr << "Error in processing loop: " << e.what() << std::endl;
-                std::this_thread::sleep_for(std::chrono::seconds(5));
+// ============================================================================
+// КОНСТАНТЫ И ПРОТОТИПЫ ФУНКЦИЙ
+// ============================================================================
+
+const int MIN_VALUE = -100;
+const int MAX_VALUE = 200;
+const int VALUE_RANGE = MAX_VALUE - MIN_VALUE + 1;
+
+void fillRandom(int arr[], int size);
+void fillKeyboard(int arr[], int size);
+void printArray(int arr[], int size);
+int sumNegative(int arr[], int size);
+int countPositiveLessThanA(int arr[], int size, int A);
+int lastDifferentSignsPair(int arr[], int size);
+
+// ============================================================================
+// ОСНОВНАЯ ПРОГРАММА
+// ============================================================================
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+
+    int size;
+    cout << "Введите размер массива: ";
+    cin >> size;
+
+    if (size <= 0) {
+        cout << "Ошибка: размер массива должен быть положительным числом!" << endl;
+        return 1;
+    }
+
+    int* arr = new int[size];
+
+    int choice;
+    cout << "\nВыберите способ заполнения массива:" << endl;
+    cout << "1 - Заполнить случайными числами" << endl;
+    cout << "2 - Ввести с клавиатуры" << endl;
+    cout << "Ваш выбор: ";
+    cin >> choice;
+
+    switch (choice) {
+    case 1:
+        fillRandom(arr, size);
+        break;
+    case 2:
+        fillKeyboard(arr, size);
+        break;
+    default:
+        cout << "Неверный выбор! Заполняю случайными числами." << endl;
+        fillRandom(arr, size);
+        break;
+    }
+
+    printArray(arr, size);
+
+    int sum = sumNegative(arr, size);
+    cout << "1. Сумма отрицательных элементов: " << sum << endl;
+
+    int A;
+    cout << "\nВведите число A для второго задания: ";
+    cin >> A;
+    int count = countPositiveLessThanA(arr, size, A);
+    cout << "2. Количество положительных элементов, не превосходящих " << A << ": " << count << endl;
+
+    int lastPairIndex = lastDifferentSignsPair(arr, size);
+    if (lastPairIndex != -1) {
+        cout << "3. Номер последней пары соседних элементов с разными знаками: " << lastPairIndex + 1 << endl;
+        cout << "   (элементы " << arr[lastPairIndex] << " и " << arr[lastPairIndex + 1] << ")" << endl;
+    }
+    else {
+        cout << "3. Пар соседних элементов с разными знаками не найдено" << endl;
+    }
+
+    delete[] arr;
+    return 0;
+}
+
+// ============================================================================
+// РЕАЛИЗАЦИИ ФУНКЦИЙ
+// ============================================================================
+
+void fillRandom(int arr[], int size) {
+    srand(time(0));
+    for (int i = 0; i < size; i++) {
+        arr[i] = rand() % VALUE_RANGE + MIN_VALUE;
+    }
+    cout << "Массив заполнен случайными числами в диапазоне [" << MIN_VALUE << "; " << MAX_VALUE << "]." << endl;
+}
+
+void fillKeyboard(int arr[], int size) {
+    cout << "Введите " << size << " целых чисел в диапазоне [" << MIN_VALUE << "; " << MAX_VALUE << "]:" << endl;
+
+    for (int i = 0; i < size; i++) {
+        bool validInput = false;
+        do {
+            cout << "Элемент " << i + 1 << ": ";
+
+            if (!(cin >> arr[i])) {
+                cout << "Ошибка ввода! Введите целое число: ";
+                cin.clear();
+                cin.ignore(10000, '\n');
             }
-        }
-    }
-
-    void fetch_data() {
-        try {
-            auto data = get_external_data();
-            
-            if (data.empty()) {
-                std::cout << "No data received" << std::endl;
-                return;
+            else if (arr[i] < MIN_VALUE || arr[i] > MAX_VALUE) {
+                cout << "Число должно быть в диапазоне [" << MIN_VALUE << "; " << MAX_VALUE << "]. Повторите ввод: ";
             }
-            
-            auto processed_data = transform_data(data);
-            store_data(processed_data);
-            
-        } catch (const std::invalid_argument& e) {
-            std::cerr << "Invalid data: " << e.what() << std::endl;
-        } catch (const std::runtime_error& e) {
-            std::cerr << "Connection error: " << e.what() << std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-        } catch (const std::exception& e) {
-            std::cerr << "Unexpected error in data fetching: " << e.what() << std::endl;
-        }
-    }
-
-    int get_external_data() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return 42;
-    }
-
-    int transform_data(int data) {
-        if (data < 0) {
-            throw std::invalid_argument("Data cannot be negative");
-        }
-        return data * 2;
-    }
-
-    void store_data(int processed_data) {
-        try {
-            std::lock_guard<std::mutex> lock(_cache_mutex);
-            auto now = std::chrono::system_clock::now();
-            auto key = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
-                now.time_since_epoch()).count());
-            
-            _data_cache[key] = std::make_pair(now, processed_data);
-            
-        } catch (const std::exception& e) {
-            std::cerr << "Error storing data: " << e.what() << std::endl;
-        }
-    }
-
-    void cleanup_cache() {
-        try {
-            std::lock_guard<std::mutex> lock(_cache_mutex);
-            auto now = std::chrono::system_clock::now();
-            
-            auto it = _data_cache.begin();
-            while (it != _data_cache.end()) {
-                if (now - it->second.first > _cache_ttl) {
-                    it = _data_cache.erase(it);
-                } else {
-                    ++it;
-                }
+            else {
+                validInput = true;
             }
-            
-        } catch (const std::exception& e) {
-            std::cerr << "Error cleaning cache: " << e.what() << std::endl;
+        } while (!validInput);
+    }
+    cout << "Массив заполнен числами с клавиатуры." << endl;
+}
+
+void printArray(int arr[], int size) {
+    cout << "Массив: ";
+    for (int i = 0; i < size; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+int sumNegative(int arr[], int size) {
+    int sum = 0;
+    for (int i = 0; i < size; i++) {
+        if (arr[i] < 0) {
+            sum += arr[i];
+        }
+    }
+    return sum;
+}
+
+int countPositiveLessThanA(int arr[], int size, int A) {
+    int count = 0;
+    for (int i = 0; i < size; i++) {
+        if (arr[i] > 0 && arr[i] <= A) {
+            count++;
+        }
+    }
+    return count;
+}
+
+int lastDifferentSignsPair(int arr[], int size) {
+    int lastIndex = -1;
+
+    for (int i = 0; i < size - 1; i++) {
+        bool currentNonNegative = arr[i] >= 0;
+        bool nextNonNegative = arr[i + 1] >= 0;
+
+        if (currentNonNegative != nextNonNegative) {
+            lastIndex = i;
         }
     }
 
-public:
-    DataProcessor() : _is_running(false), _cache_ttl(std::chrono::minutes(10)) {}
-
-    ~DataProcessor() {
-        stop_processing();
-    }
-
-    void start_processing() {
-        if (_is_running.exchange(true)) {
-            std::cout << "Processing already running" << std::endl;
-            return;
-        }
-        
-        try {
-            _processing_thread = std::thread(&DataProcessor::processing_loop, this);
-            std::cout << "Data processing started" << std::endl;
-        } catch (const std::exception& e) {
-            std::cerr << "Error starting processing: " << e.what() << std::endl;
-            _is_running = false;
-        }
-    }
-
-    void stop_processing() {
-        if (!_is_running.exchange(false)) {
-            std::cout
+    return lastIndex;
+}
