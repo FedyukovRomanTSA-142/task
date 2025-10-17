@@ -12,12 +12,12 @@ const int MIN_VALUE = -100;
 const int MAX_VALUE = 200;
 const int VALUE_RANGE = MAX_VALUE - MIN_VALUE + 1;
 
-void fillRandom(int arr[], int size);
-void fillKeyboard(int arr[], int size);
-void printArray(int arr[], int size);
-int sumNegative(int arr[], int size);
-int countPositiveLessThanA(int arr[], int size, int A);
-int lastDifferentSignsPair(int arr[], int size);
+void fillRandom(int* arr, int size);
+void fillKeyboard(int* arr, int size);
+void printArray(int* arr, int size);
+int sumNegative(int* arr, int size);
+int countPositiveLessThanA(int* arr, int size, int A);
+int lastDifferentSignsPair(int* arr, int size);
 
 // ============================================================================
 // ОСНОВНАЯ ПРОГРАММА
@@ -35,6 +35,7 @@ int main() {
         return 1;
     }
 
+    // Динамическое выделение памяти для массива
     int* arr = new int[size];
 
     int choice;
@@ -77,6 +78,7 @@ int main() {
         cout << "3. Пар соседних элементов с разными знаками не найдено" << endl;
     }
 
+    // Освобождение памяти
     delete[] arr;
     return 0;
 }
@@ -85,7 +87,7 @@ int main() {
 // РЕАЛИЗАЦИИ ФУНКЦИЙ
 // ============================================================================
 
-void fillRandom(int arr[], int size) {
+void fillRandom(int* arr, int size) {
     srand(time(0));
     for (int i = 0; i < size; i++) {
         arr[i] = rand() % VALUE_RANGE + MIN_VALUE;
@@ -93,7 +95,7 @@ void fillRandom(int arr[], int size) {
     cout << "Массив заполнен случайными числами в диапазоне [" << MIN_VALUE << "; " << MAX_VALUE << "]." << endl;
 }
 
-void fillKeyboard(int arr[], int size) {
+void fillKeyboard(int* arr, int size) {
     cout << "Введите " << size << " целых чисел в диапазоне [" << MIN_VALUE << "; " << MAX_VALUE << "]:" << endl;
 
     for (int i = 0; i < size; i++) {
@@ -117,14 +119,15 @@ void fillKeyboard(int arr[], int size) {
     cout << "Массив заполнен числами с клавиатуры." << endl;
 }
 
-void printArray(int arr[], int size) {
+void printArray(int* arr, int size) {
     cout << "Массив: ";
     for (int i = 0; i < size; i++) {
         cout << arr[i] << " ";
     }
     cout << endl;
 }
-int sumNegative(int arr[], int size) {
+
+int sumNegative(int* arr, int size) {
     int sum = 0;
     for (int i = 0; i < size; i++) {
         if (arr[i] < 0) {
@@ -134,7 +137,7 @@ int sumNegative(int arr[], int size) {
     return sum;
 }
 
-int countPositiveLessThanA(int arr[], int size, int A) {
+int countPositiveLessThanA(int* arr, int size, int A) {
     int count = 0;
     for (int i = 0; i < size; i++) {
         if (arr[i] > 0 && arr[i] <= A) {
@@ -144,7 +147,7 @@ int countPositiveLessThanA(int arr[], int size, int A) {
     return count;
 }
 
-int lastDifferentSignsPair(int arr[], int size) {
+int lastDifferentSignsPair(int* arr, int size) {
     int lastIndex = -1;
 
     for (int i = 0; i < size - 1; i++) {
